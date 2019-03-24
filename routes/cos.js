@@ -5,10 +5,10 @@ var router = express.Router();
 
 
 var config = {
-    endpoint: 's3.us.cloud-object-storage.appdomain.cloud',
-    apiKeyId: 'uLIUWOsvhfi8DyrVr9l3YGeMxVyXYNh1jrdwT0hiwaXC',
+    endpoint: 's3.us-south.cloud-object-storage.appdomain.cloud',
+    apiKeyId: '2sZdyb9eCSzdrvhhXHOsHrjLe-4NYb9E00Mcesr1kK0P',
     ibmAuthEndpoint: 'https://iam.ng.bluemix.net/oidc/token',
-    serviceInstanceId: 'crn:v1:bluemix:public:cloud-object-storage:global:a/df4f0fcca34e47e38ebf5116ed93d0f0:0fb95aa0-347f-4fed-a13c-16e20b70abf6::',
+    serviceInstanceId: 'crn:v1:bluemix:public:cloud-object-storage:global:a/f899bf894f7142cfb8e0c7bc2a940ece:b14423ea-babc-4971-8ce4-9c09a7e3cb60::',
 };
 
 var cos = new AWS.S3(config);
