@@ -14,6 +14,7 @@
     "pug": "2.0.0-beta11"
   },
   "devDependencies": {
+    "forever": "^0.15.3",
     "ibm-cos-sdk": "^1.4.4",
     "nodemon": "^1.18.10"
   }
