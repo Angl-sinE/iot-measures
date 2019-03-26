@@ -14,10 +14,10 @@ var config = {
 var cos = new AWS.S3(config);
 
 router.post('/',function(req, res, next){
-  createTextFile(req.body.bucket_name,req.body.itemName,req.body.fileText)
+  createTextFile(req.body.bucket_name,req.body.itemName,req.body.fileText, res)
 });
 
-function createTextFile(bucketName, itemName, fileText) {
+function createTextFile(bucketName, itemName, fileText, res) {
     console.log(`Creating new item: ${itemName}`);
     return cos.putObject({
         Bucket: bucketName, 
@@ -26,9 +26,11 @@ function createTextFile(bucketName, itemName, fileText) {
     }).promise()
     .then(() => {
         console.log(`Item: ${itemName} created!`);
+        res.status(200).json({message : 'Success', status: 200});
     })
     .catch((e) => {
         console.error(`ERROR: ${e.code} - ${e.message}\n`);
+        res.status(500).json({message : 'Error: '+e.message, status: 500});
     });
 }
 module.exports = router;
