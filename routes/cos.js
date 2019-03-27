@@ -1,8 +1,8 @@
 var express = require('express');
 const AWS = require('ibm-cos-sdk');
+var multer = require('multer')
+var multParse = multer()
 var router = express.Router();
-
-
 
 var config = {
     endpoint: 's3.us-south.cloud-object-storage.appdomain.cloud',
@@ -13,12 +13,16 @@ var config = {
 
 var cos = new AWS.S3(config);
 
-router.post('/',function(req, res, next){
-  createTextFile(req.body.bucket_name,req.body.itemName,req.body.fileText, res)
+router.post('/',multParse.single('file'),function(req, res, next){
+    console.log('body: ', req.body)
+    console.log('file: ', req.file)
+  createTextFile(req.body.bucket_name,req.body.itemName,req.body.file, res)
 });
 
 function createTextFile(bucketName, itemName, fileText, res) {
     console.log(`Creating new item: ${itemName}`);
+    console.log('file', fileText);
+    /*
     return cos.putObject({
         Bucket: bucketName, 
         Key: itemName, 
@@ -32,6 +36,7 @@ function createTextFile(bucketName, itemName, fileText, res) {
         console.error(`ERROR: ${e.code} - ${e.message}\n`);
         res.status(500).json({message : 'Error: '+e.message, status: 500});
     });
+    */
 }
 module.exports = router;
   
