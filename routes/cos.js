@@ -1,7 +1,8 @@
 var express = require('express');
 const AWS = require('ibm-cos-sdk');
-var multer = require('multer')
-var multParse = multer()
+var multer = require('multer');
+var fs = require('fs'),obj;
+var multParse = multer();
 var router = express.Router();
 
 var config = {
@@ -14,19 +15,21 @@ var config = {
 var cos = new AWS.S3(config);
 
 router.post('/',multParse.single('file'),function(req, res, next){
-    console.log('body: ', req.body)
-    console.log('file: ', req.file)
-  createTextFile(req.body.bucket_name,req.body.itemName,req.body.file, res)
+   var dataCheck = checkType(req.file)
+   
+   if (dataCheck) 
+     createTextFile(req.body.bucketName,req.body.itemName,req.file, res)
+  else 
+    res.status(500).json({message : 'Error: Archivo Invalido', status: 500});
 });
 
 function createTextFile(bucketName, itemName, fileText, res) {
-    console.log(`Creating new item: ${itemName}`);
-    console.log('file', fileText);
-    /*
+    console.log(`Creating new item: ${itemName}`); 
+    jsonString =  JSON.stringify(fileText)
     return cos.putObject({
         Bucket: bucketName, 
         Key: itemName, 
-        Body: fileText
+        Body: jsonString
     }).promise()
     .then(() => {
         console.log(`Item: ${itemName} created!`);
@@ -36,7 +39,18 @@ function createTextFile(bucketName, itemName, fileText, res) {
         console.error(`ERROR: ${e.code} - ${e.message}\n`);
         res.status(500).json({message : 'Error: '+e.message, status: 500});
     });
-    */
+    
 }
+/**
+ * Verifica si el archivo es tipo json
+ * @param  body 
+ */
+function checkType(body) {
+    if (body.mimetype === 'application/json')
+        return true
+    else
+        return false
+}
+
 module.exports = router;
   
