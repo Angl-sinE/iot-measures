@@ -1,7 +1,6 @@
 var express = require('express');
 const AWS = require('ibm-cos-sdk');
 var multer = require('multer');
-var fs = require('fs'),obj;
 var multParse = multer();
 var router = express.Router();
 
@@ -15,19 +14,21 @@ var config = {
 var cos = new AWS.S3(config);
 
 router.post('/',multParse.single('file'),function(req, res, next){
-   var dataCheck = checkType(req.file)
-   
-   if (dataCheck) 
-     createTextFile(req.body.bucketName,req.body.itemName,req.file, res)
-  else 
+   var dataCheck = checkType(req.file)  
+   if (dataCheck){
+     var fileName = req.file.originalname;
+     fileName = fileName.substring(0,fileName.indexOf('.'))
+     createTextFile(fileName,req.file, res);
+   } 
+   else 
     res.status(500).json({message : 'Error: Archivo Invalido', status: 500});
 });
 
-function createTextFile(bucketName, itemName, fileText, res) {
+function createTextFile(itemName, fileText, res) {
     console.log(`Creating new item: ${itemName}`); 
     jsonString =  JSON.stringify(fileText)
     return cos.putObject({
-        Bucket: bucketName, 
+        Bucket: 'feptarco', 
         Key: itemName, 
         Body: jsonString
     }).promise()
