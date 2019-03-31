@@ -34,7 +34,7 @@ function createTextFile(itemName, fileText, res) {
     }).promise()
     .then(() => {
         console.log(`Item: ${itemName} created!`);
-        res.status(200).json({message : 'Success', status: 200});
+        res.status(200);
     })
     .catch((e) => {
         console.error(`ERROR: ${e.code} - ${e.message}\n`);
