@@ -21,7 +21,7 @@ router.post('/',multParse.single('file'),function(req, res, next){
      createTextFile(fileName,req.file, res);
    } 
    else 
-    res.status(500).json({message : 'Error: Archivo Invalido', status: 500});
+    res.status(303).json({message : 'Error: Archivo Invalido', status: 303});
 });
 
 function createTextFile(itemName, fileText, res) {
