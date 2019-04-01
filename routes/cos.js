@@ -3,6 +3,17 @@ const AWS = require('ibm-cos-sdk');
 var multer = require('multer');
 var multParse = multer();
 var router = express.Router();
+const { createLogger, format, transports } = require('winston');
+
+
+const logger = createLogger({
+    level: 'debug',
+    format: format.simple(),
+    // You can also comment out the line above and uncomment the line below for JSON format
+    // format: format.json(),
+    transports: [new transports.Console()]
+  });
+  
 
 var config = {
     endpoint: 's3.us-south.cloud-object-storage.appdomain.cloud',
@@ -39,6 +50,7 @@ function createTextFile(itemName, fileText, res) {
     })
     .catch((e) => {
         console.error(`ERROR: ${e.code} - ${e.message}\n`);
+        logger.debug('Error:' , e.message);
         res.status(500).json({message : 'Error: '+e.message, status: 500});
     });
     
@@ -48,7 +60,7 @@ function createTextFile(itemName, fileText, res) {
  * @param  body 
  */
 function checkType(body) {
-    if (body.mimetype === 'application/json')
+    if (body.mimetype === 'text/plain')
         return true
     else
         return false

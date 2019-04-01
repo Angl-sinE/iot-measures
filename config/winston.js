@@ -1,5 +1,6 @@
 var appRoot = require('app-root-path');
-var winston = require('winston');
+//var winston = require('winston');
+const { createLogger, transports } = require('winston');
 var options = {
     file: {
       level: 'info',
@@ -18,10 +19,17 @@ var options = {
     },
   };
 
-  let logger = new winston.createLogger({
+  let logger = createLogger({
+    
     transports: [
+        new transports.File({ filename: `${appRoot}/logs/combined.log` }) 
+      /*  
       new winston.transports.File(options.file),
       new winston.transports.Console(options.console)
+      */
+    ],
+    exceptionHandlers: [
+        new transports.File({ filename: 'exceptions.log' })
     ],
     exitOnError: false, // do not exit on handled exceptions
   });
