@@ -4,6 +4,8 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var bodyParser = require('body-parser');
+let winstonLog = require('./config/winston');
+let morgan = require('morgan');
 
 
 
@@ -23,7 +25,9 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-
+//logging
+app.use(morgan('combined'));
+app.use(morgan("common", { stream: winstonLog.stream }))
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);

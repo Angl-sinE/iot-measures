@@ -25,6 +25,7 @@ router.post('/',multParse.single('file'),function(req, res, next){
 });
 
 function createTextFile(itemName, fileText, res) {
+    console.log('archivo: ',fileText);
     console.log(`Creating new item: ${itemName}`); 
     jsonString =  JSON.stringify(fileText)
     return cos.putObject({
