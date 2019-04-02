@@ -1,6 +1,7 @@
 var express = require('express');
 const AWS = require('ibm-cos-sdk');
 var multer = require('multer');
+var appRoot = require('app-root-path');
 var multParse = multer();
 var router = express.Router();
 const { createLogger, format, transports } = require('winston');
@@ -9,10 +10,12 @@ const { createLogger, format, transports } = require('winston');
 const logger = createLogger({
     level: 'debug',
     format: format.simple(),
-    // You can also comment out the line above and uncomment the line below for JSON format
-    // format: format.json(),
-    transports: [new transports.Console()]
-  });
+    transports: [new transports.Console()],
+    exceptionHandlers: [
+        new transports.File({ filename:  `${appRoot}/logs/exceptions.log` }),
+        new transports.Console({handleExceptions: true})
+    ],
+});
   
 
 var config = {
@@ -50,7 +53,7 @@ function createTextFile(itemName, fileText, res) {
     })
     .catch((e) => {
         console.error(`ERROR: ${e.code} - ${e.message}\n`);
-        logger.debug('Error:' , e.message);
+        logger.error(logger.exceptions.getAllInfo(e));
         res.status(500).json({message : 'Error: '+e.message, status: 500});
     });
     
@@ -60,7 +63,7 @@ function createTextFile(itemName, fileText, res) {
  * @param  body 
  */
 function checkType(body) {
-    if (body.mimetype === 'text/plain')
+    if (body.mimetype === 'application/json')
         return true
     else
         return false
