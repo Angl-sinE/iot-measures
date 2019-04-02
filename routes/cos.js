@@ -28,7 +28,8 @@ var config = {
 var cos = new AWS.S3(config);
 
 router.post('/',multParse.single('file'),function(req, res, next){
-   var dataCheck = checkType(req.file)  
+    console.log('file: ', req.file)
+    var dataCheck = checkType(req.file)  
    if (dataCheck){
      var fileName = req.file.originalname;
      fileName = fileName.substring(0,fileName.indexOf('.'))
