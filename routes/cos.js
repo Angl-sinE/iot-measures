@@ -28,24 +28,26 @@ var config = {
 var cos = new AWS.S3(config);
 
 router.post('/',function(req, res, next){
-   var dataCheck = checkType(req.body.file)  
+   var dataCheck = checkType(req.body) 
+   console.log('data: ', req.body) 
    if (dataCheck){
      //var fileName = req.file.originalname;
      //fileName = fileName.substring(0,fileName.indexOf('.'))
      //createTextFile(fileName,req.file, res);
-     createTextFile(req.body.file,req.body.file, res);
+     createTextFile(req.body,req.body, res);
    } 
    else 
     res.status(303).json({message : 'Error: Archivo Invalido', status: 303});
 });
 
 function createTextFile(itemName, fileText, res) {
-    console.log('archivo: ',fileText);
     console.log(`Creating new item: ${itemName}`); 
-    jsonString =  JSON.stringify(fileText)
+    
+    jsonString = JSON.stringify(fileText)
+    console.log(`String: ${jsonString}`); 
     return cos.putObject({
         Bucket: 'feptarco', 
-        Key: itemName, 
+        Key: jsonString, 
         Body: jsonString
     }).promise()
     .then(() => {
