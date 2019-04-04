@@ -27,12 +27,13 @@ var config = {
 
 var cos = new AWS.S3(config);
 
-router.post('/',multParse.single('file'),function(req, res, next){
-   var dataCheck = checkType(req.file)  
+router.post('/',function(req, res, next){
+   var dataCheck = checkType(req.body.file)  
    if (dataCheck){
-     var fileName = req.file.originalname;
-     fileName = fileName.substring(0,fileName.indexOf('.'))
-     createTextFile(fileName,req.file, res);
+     //var fileName = req.file.originalname;
+     //fileName = fileName.substring(0,fileName.indexOf('.'))
+     //createTextFile(fileName,req.file, res);
+     createTextFile(req.body.file,req.body.file, res);
    } 
    else 
     res.status(303).json({message : 'Error: Archivo Invalido', status: 303});
@@ -56,17 +57,23 @@ function createTextFile(itemName, fileText, res) {
         logger.error(logger.exceptions.getAllInfo(e));
         res.status(500).json({message : 'Error: '+e.message, status: 500});
     });
-    
+        
 }
 /**
  * Verifica si el archivo es tipo json
  * @param  body 
  */
 function checkType(body) {
+    /*
     if (body.mimetype === 'application/json')
         return true
     else
         return false
+    */
+   if (body === undefined)
+        return false
+    else
+        return true    
 }
 
 module.exports = router;
