@@ -34,7 +34,9 @@ router.post('/',function(req, res, next){
      //var fileName = req.file.originalname;
      //fileName = fileName.substring(0,fileName.indexOf('.'))
      //createTextFile(fileName,req.file, res);
-     createTextFile(req.body,req.body, res);
+     var itemName = req.body.name;
+     console.log('item: ', itemName);
+     createTextFile(itemName,req.body, res);
    } 
    else 
     res.status(303).json({message : 'Error: Archivo Invalido', status: 303});
@@ -42,12 +44,11 @@ router.post('/',function(req, res, next){
 
 function createTextFile(itemName, fileText, res) {
     console.log(`Creating new item: ${itemName}`); 
-    
     jsonString = JSON.stringify(fileText)
     console.log(`String: ${jsonString}`); 
     return cos.putObject({
         Bucket: 'feptarco', 
-        Key: jsonString, 
+        Key: itemName, 
         Body: jsonString
     }).promise()
     .then(() => {
