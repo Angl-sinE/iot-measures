@@ -34,8 +34,7 @@ router.post('/',function(req, res, next){
      //var fileName = req.file.originalname;
      //fileName = fileName.substring(0,fileName.indexOf('.'))
      //createTextFile(fileName,req.file, res);
-     var itemName = req.body.name;
-     itemName = itemName +'_'+getDate(new Date())
+     var itemName = 'Archivo: '+'_'+getDate(new Date());
      console.log('item: ', itemName);
      createTextFile(itemName,req.body, res);
    } 
