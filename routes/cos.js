@@ -35,6 +35,7 @@ router.post('/',function(req, res, next){
      //fileName = fileName.substring(0,fileName.indexOf('.'))
      //createTextFile(fileName,req.file, res);
      var itemName = req.body.name;
+     itemName = itemName +'_'+getDate(new Date())
      console.log('item: ', itemName);
      createTextFile(itemName,req.body, res);
    } 
@@ -77,6 +78,17 @@ function checkType(body) {
         return false
     else
         return true    
+}
+
+function getDate(date){
+    var hours = date.getHours();
+    var minutes = date.getMinutes();
+    var ampm = hours >= 12 ? 'pm' : 'am';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    minutes = minutes < 10 ? '0'+minutes : minutes;
+    var strTime = hours + '-' + minutes + '-' + ampm;
+    return date.getDate()  + "-" + date.getMonth()+1 + "-" + date.getFullYear() + "-" + strTime;
 }
 
 module.exports = router;
