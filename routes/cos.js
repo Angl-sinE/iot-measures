@@ -31,10 +31,7 @@ router.post('/',function(req, res, next){
    var dataCheck = checkType(req.body) 
    console.log('data: ', req.body) 
    if (dataCheck){
-     //var fileName = req.file.originalname;
-     //fileName = fileName.substring(0,fileName.indexOf('.'))
-     //createTextFile(fileName,req.file, res);
-     var itemName = 'Archivo: '+'_'+getDate(new Date());
+     var itemName = 'Temp: '+'_'+getDate(new Date());
      console.log('item: ', itemName);
      createTextFile(itemName,req.body, res);
    } 
@@ -45,7 +42,7 @@ router.post('/',function(req, res, next){
 function createTextFile(itemName, fileText, res) {
     console.log(`Creating new item: ${itemName}`); 
     jsonString = JSON.stringify(fileText)
-    console.log(`String: ${jsonString}`); 
+    console.log(`Json: ${jsonString}`); 
     return cos.putObject({
         Bucket: 'feptarco', 
         Key: itemName, 
@@ -67,12 +64,6 @@ function createTextFile(itemName, fileText, res) {
  * @param  body 
  */
 function checkType(body) {
-    /*
-    if (body.mimetype === 'application/json')
-        return true
-    else
-        return false
-    */
    if (body === undefined)
         return false
     else
