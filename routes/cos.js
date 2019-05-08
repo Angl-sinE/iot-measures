@@ -31,7 +31,7 @@ router.post('/',function(req, res, next){
    var dataCheck = checkType(req.body) 
    console.log('data: ', req.body) 
    if (dataCheck){
-     var itemName = 'Temp: '+'_'+getDate(new Date());
+     var itemName = 'T'+'-'+getDate(new Date());
      console.log('item: ', itemName);
      createTextFile(itemName,req.body, res);
    } 
@@ -42,7 +42,7 @@ router.post('/',function(req, res, next){
 function createTextFile(itemName, fileText, res) {
     console.log(`Creating new item: ${itemName}`); 
     jsonString = JSON.stringify(fileText)
-    console.log(`Json: ${jsonString}`); 
+    console.log(`Values: ${jsonString}`); 
     return cos.putObject({
         Bucket: 'feptarco', 
         Key: itemName, 
@@ -57,6 +57,7 @@ function createTextFile(itemName, fileText, res) {
         logger.error(logger.exceptions.getAllInfo(e));
         res.status(500).json({message : 'Error: '+e.message, status: 500});
     });
+    
         
 }
 /**
@@ -73,12 +74,14 @@ function checkType(body) {
 function getDate(date){
     var hours = date.getHours();
     var minutes = date.getMinutes();
+    var seconds = date.getSeconds();
     var ampm = hours >= 12 ? 'pm' : 'am';
     hours = hours % 12;
     hours = hours ? hours : 12; // the hour '0' should be '12'
     minutes = minutes < 10 ? '0'+minutes : minutes;
-    var strTime = hours + '-' + minutes + '-' + ampm;
-    return date.getDate()  + "-" + date.getMonth()+1 + "-" + date.getFullYear() + "-" + strTime;
+    var month = ("0" + (date.getMonth() + 1)).slice(-2)
+    var strTime = hours + '-' + minutes + '-'+seconds+'-'+ampm;
+    return date.getDate()  + "-" + month + "-" + date.getFullYear() + "-" + strTime;
 }
 
 module.exports = router;
