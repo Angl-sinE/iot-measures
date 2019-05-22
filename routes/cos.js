@@ -40,9 +40,12 @@ router.post('/',function(req, res, next){
 });
 
 function createTextFile(itemName, fileText, res) {
-    console.log(`Creating new item: ${itemName}`); 
+    console.log(`Creando objeto: ${itemName}`); 
     jsonString = JSON.stringify(fileText)
     console.log(`Values: ${jsonString}`); 
+    var card = JSON.parse(jsonString).card;
+    var temp = JSON.parse(jsonString).temp;
+    jsonString = checkCardiacValue(card,temp);    
     return cos.putObject({
         Bucket: 'feptarco', 
         Key: itemName, 
@@ -57,11 +60,42 @@ function createTextFile(itemName, fileText, res) {
         logger.error(logger.exceptions.getAllInfo(e));
         res.status(500).json({message : 'Error: '+e.message, status: 500});
     });
-    
         
 }
+
 /**
- * Verifica si el archivo es tipo json
+ * Replaces the extra value in the cardiac measure and 
+ * creates a new jsonString
+ * @param {*} card 
+ * @param {*} temp 
+ */
+function checkCardiacValue(card, temp){
+    var jsonData = {};
+    var measures = []
+    jsonData.measures = measures;
+    var cardInt = parseInt(card);
+    if (cardInt >= 900){
+        newCardValue = card.replace("9", "");
+        var measure ={
+            "temp": temp,
+            "card": newCardValue
+        };
+    }
+    else{
+        var measure ={
+            "temp": temp,
+            "card": card
+        };
+    }
+    jsonData.measures.push(measure);
+    console.log("data: ", jsonData);
+    
+    
+    return JSON.stringify(jsonData);
+    
+}
+/**
+ * Checks if the type is defined
  * @param  body 
  */
 function checkType(body) {
@@ -71,6 +105,10 @@ function checkType(body) {
         return true    
 }
 
+/**
+ * Returns a formatted date
+ * @param {*} date 
+ */
 function getDate(date){
     var hours = date.getHours();
     var minutes = date.getMinutes();
