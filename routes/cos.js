@@ -1,8 +1,6 @@
 var express = require('express');
 const AWS = require('ibm-cos-sdk');
-var multer = require('multer');
 var appRoot = require('app-root-path');
-var multParse = multer();
 var router = express.Router();
 const { createLogger, format, transports } = require('winston');
 
@@ -25,21 +23,7 @@ var config = {
     serviceInstanceId: 'crn:v1:bluemix:public:cloud-object-storage:global:a/f899bf894f7142cfb8e0c7bc2a940ece:b14423ea-babc-4971-8ce4-9c09a7e3cb60::',
 };
 
-var cos = new AWS.S3(config);
-
-
-router.get('/', function (req,res,next){
-    doGetObject();
-});
-
-function doGetObject() {
- console.log('Getting object');
-  return cos.getObject({
-     Bucket: 'feptarco',
-     Key: 'T-16-05-2019-3-20-45-am'
-  }).createReadStream().pipe(fs.createWriteStream('./MyObject'));
-}
-    
+var cos = new AWS.S3(config);    
   
 
 router.post('/',function(req, res, next){
@@ -59,9 +43,50 @@ router.get('/getObject', function (req,res,next) {
 });
 
 router.get('/getBucketObjs', function(req,res,next){
-    getBucketContents('feptarco',res);
+    getBucketObjects('feptarco',res);
 });
-function getBucketContents(bucketName, res) {
+
+router.get('/getBucketContents', function(req,res,next) {
+      getBucketObjectList('feptarco', res);
+    
+});
+
+/**
+ * 
+ * @param {*} bucketName 
+ * @param {*} res 
+ */
+ function getBucketObjectList(bucketName, res){
+    return cos.listObjects(
+        {Bucket: bucketName},
+    ).promise()
+    .then((data) => {
+        if(data != null && data.Contents != null){
+            var measures = [];
+            for (var i = 0; i < data.Contents.length; i++) {
+                var item = data.Contents[i].Key;
+                measures.push(item);
+                /*
+                return getObjectFromBucket(bucketName, item, res).then((res) => {
+                    measures.push(res);
+                    return measures;
+                });
+                */          
+            }
+            console.log(measures);
+            return measures;
+        }
+    });
+}
+ 
+
+
+/**
+ * Returns all objects from a bucket
+ * @param {*} bucketName 
+ * @param {*} res 
+ */
+function getBucketObjects(bucketName, res) {
     console.log(`Retrieving bucket contents from: ${bucketName}`);
     return cos.listObjects(
         {Bucket: bucketName},
@@ -83,35 +108,31 @@ function getBucketContents(bucketName, res) {
     });
 }
 
-
 /**
- * 
+ * Returns object from a bucket given name
  * @param {*} bucketName 
  * @param {*} itemName 
  */
-function getObjectFromBucket(bucketName, itemName, res) {
-    console.log(`Retrieving item from bucket: ${bucketName}, key: ${itemName}`);
+ function getObjectFromBucket (bucketName, itemName, res) {
     return cos.getObject({
         Bucket: bucketName, 
         Key: itemName
     }).promise()
     .then((data) => {
         if (data != null) {
-            console.log('File Contents: ' + Buffer.from(data.Body).toString());
-            let value = Buffer.from(data.Body).toString();
             res.status(200).json({
-                'data':value
+                data: Buffer.from(data.Body).toString()
             });
         }    
     })
     .catch((e) => {
         console.error(`ERROR: ${e.code} - ${e.message}\n`);
+        return e;
     });
 }
 
-
 /**
- * 
+ * Creates an object in the IBM Cloud Storage Bucket
  * @param {*} itemName 
  * @param {*} fileText 
  * @param {*} res 
@@ -155,13 +176,15 @@ function checkCardiacValue(card, temp){
         newCardValue = card.replace("9", "");
         var measure ={
             "temp": temp,
-            "card": newCardValue
+            "card": newCardValue,
+            "date": getDate(new Date())
         };
     }
     else{
         var measure ={
             "temp": temp,
-            "card": card
+            "card": card,
+            "date": getDate(new Date())
         };
     }
     jsonData.measures.push(measure);
