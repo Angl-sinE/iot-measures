@@ -27,19 +27,96 @@ var config = {
 
 var cos = new AWS.S3(config);
 
+
+router.get('/', function (req,res,next){
+    doGetObject();
+});
+
+function doGetObject() {
+ console.log('Getting object');
+  return cos.getObject({
+     Bucket: 'feptarco',
+     Key: 'T-16-05-2019-3-20-45-am'
+  }).createReadStream().pipe(fs.createWriteStream('./MyObject'));
+}
+    
+  
+
 router.post('/',function(req, res, next){
    var dataCheck = checkType(req.body) 
    console.log('data: ', req.body) 
    if (dataCheck){
      var itemName = 'T'+'-'+getDate(new Date());
      console.log('item: ', itemName);
-     createTextFile(itemName,req.body, res);
+     createObjectInBucket(itemName,req.body, res);
    } 
    else 
     res.status(303).json({message : 'Error: Archivo Invalido', status: 303});
 });
 
-function createTextFile(itemName, fileText, res) {
+router.get('/getObject', function (req,res,next) {
+    getObjectFromBucket('feptarco', 'T-16-05-2019-3-20-45-am' ,res);
+});
+
+router.get('/getBucketObjs', function(req,res,next){
+    getBucketContents('feptarco',res);
+});
+function getBucketContents(bucketName, res) {
+    console.log(`Retrieving bucket contents from: ${bucketName}`);
+    return cos.listObjects(
+        {Bucket: bucketName},
+    ).promise()
+    .then((data) => {
+        if (data != null && data.Contents != null) {
+            for (var i = 0; i < data.Contents.length; i++) {
+                var itemKey = data.Contents[i].Key;
+                var itemSize = data.Contents[i].Size;
+                console.log(`Item: ${itemKey} (${itemSize} bytes).`)
+            }
+        res.status(200).json({
+            'data': data.Contents
+        });
+        }    
+    })
+    .catch((e) => {
+        console.error(`ERROR: ${e.code} - ${e.message}\n`);
+    });
+}
+
+
+/**
+ * 
+ * @param {*} bucketName 
+ * @param {*} itemName 
+ */
+function getObjectFromBucket(bucketName, itemName, res) {
+    console.log(`Retrieving item from bucket: ${bucketName}, key: ${itemName}`);
+    return cos.getObject({
+        Bucket: bucketName, 
+        Key: itemName
+    }).promise()
+    .then((data) => {
+        if (data != null) {
+            console.log('File Contents: ' + Buffer.from(data.Body).toString());
+            let value = Buffer.from(data.Body).toString();
+            res.status(200).json({
+                'data':value
+            });
+        }    
+    })
+    .catch((e) => {
+        console.error(`ERROR: ${e.code} - ${e.message}\n`);
+    });
+}
+
+
+/**
+ * 
+ * @param {*} itemName 
+ * @param {*} fileText 
+ * @param {*} res 
+ */
+function createObjectInBucket(itemName, fileText, res) {
     console.log(`Creando objeto: ${itemName}`); 
     jsonString = JSON.stringify(fileText)
     console.log(`Values: ${jsonString}`); 
