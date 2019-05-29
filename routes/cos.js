@@ -39,7 +39,11 @@ router.post('/',function(req, res, next){
 });
 
 router.get('/getObject', function (req,res,next) {
-    getObjectFromBucket('feptarco', 'T-16-05-2019-3-20-45-am' ,res);
+
+    if (req.query.name !== undefined)
+        getObjectFromBucket('feptarco', req.query.name ,res);
+    else   
+        res.status(404).json({message : 'Nombre de objeto no definido', status: 404});   
 });
 
 router.get('/getBucketObjs', function(req,res,next){
@@ -52,7 +56,7 @@ router.get('/getBucketContents', function(req,res,next) {
 });
 
 /**
- * 
+ * Returns the objects content of the bucket
  * @param {*} bucketName 
  * @param {*} res 
  */
@@ -93,13 +97,14 @@ function getBucketObjects(bucketName, res) {
     ).promise()
     .then((data) => {
         if (data != null && data.Contents != null) {
+            var contents = []
             for (var i = 0; i < data.Contents.length; i++) {
                 var itemKey = data.Contents[i].Key;
-                var itemSize = data.Contents[i].Size;
-                console.log(`Item: ${itemKey} (${itemSize} bytes).`)
+                contents.push(itemKey);
+
             }
         res.status(200).json({
-            'data': data.Contents
+            'data': contents
         });
         }    
     })
