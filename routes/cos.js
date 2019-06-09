@@ -2,8 +2,8 @@ var express = require('express');
 const AWS = require('ibm-cos-sdk');
 var appRoot = require('app-root-path');
 var router = express.Router();
+var axios = require('axios');
 const { createLogger, format, transports } = require('winston');
-
 
 const logger = createLogger({
     level: 'debug',
@@ -14,7 +14,6 @@ const logger = createLogger({
         new transports.Console({handleExceptions: true})
     ],
 });
-  
 
 var config = {
     endpoint: 's3.us-south.cloud-object-storage.appdomain.cloud',
@@ -23,18 +22,17 @@ var config = {
     serviceInstanceId: 'crn:v1:bluemix:public:cloud-object-storage:global:a/f899bf894f7142cfb8e0c7bc2a940ece:b14423ea-babc-4971-8ce4-9c09a7e3cb60::',
 };
 
-var cos = new AWS.S3(config);    
-  
+var cos = new AWS.S3(config);
 
 router.post('/',function(req, res, next){
-   var dataCheck = checkType(req.body) 
-   console.log('data: ', req.body) 
+   var dataCheck = checkType(req.body)
+   console.log('data: ', req.body)
    if (dataCheck){
      var itemName = 'T'+'-'+getDate(new Date());
      console.log('item: ', itemName);
      createObjectInBucket(itemName,req.body, res);
-   } 
-   else 
+   }
+   else
     res.status(303).json({message : 'Error: Archivo Invalido', status: 303});
 });
 
@@ -42,8 +40,8 @@ router.get('/getObject', function (req,res,next) {
 
     if (req.query.name !== undefined)
         getObjectFromBucket('feptarco', req.query.name ,res);
-    else   
-        res.status(404).json({message : 'Nombre de objeto no definido', status: 404});   
+    else
+        res.status(404).json({message : 'Nombre de objeto no definido', status: 404});
 });
 
 router.get('/getBucketObjs', function(req,res,next){
@@ -52,13 +50,13 @@ router.get('/getBucketObjs', function(req,res,next){
 
 router.get('/getBucketContents', function(req,res,next) {
       getBucketObjectList('feptarco', res);
-    
+
 });
 
 /**
  * Returns the objects content of the bucket
- * @param {*} bucketName 
- * @param {*} res 
+ * @param {*} bucketName
+ * @param {*} res
  */
  function getBucketObjectList(bucketName, res){
     return cos.listObjects(
@@ -75,20 +73,20 @@ router.get('/getBucketContents', function(req,res,next) {
                     measures.push(res);
                     return measures;
                 });
-                */          
+                */
             }
             console.log(measures);
             return measures;
         }
     });
 }
- 
+
 
 
 /**
  * Returns all objects from a bucket
- * @param {*} bucketName 
- * @param {*} res 
+ * @param {*} bucketName
+ * @param {*} res
  */
 function getBucketObjects(bucketName, res) {
     console.log(`Retrieving bucket contents from: ${bucketName}`);
@@ -106,7 +104,7 @@ function getBucketObjects(bucketName, res) {
         res.status(200).json({
             'data': contents
         });
-        }    
+        }
     })
     .catch((e) => {
         console.error(`ERROR: ${e.code} - ${e.message}\n`);
@@ -115,12 +113,12 @@ function getBucketObjects(bucketName, res) {
 
 /**
  * Returns object from a bucket given name
- * @param {*} bucketName 
- * @param {*} itemName 
+ * @param {*} bucketName
+ * @param {*} itemName
  */
  function getObjectFromBucket (bucketName, itemName, res) {
     return cos.getObject({
-        Bucket: bucketName, 
+        Bucket: bucketName,
         Key: itemName
     }).promise()
     .then((data) => {
@@ -128,7 +126,7 @@ function getBucketObjects(bucketName, res) {
             res.status(200).json({
                 data: Buffer.from(data.Body).toString()
             });
-        }    
+        }
     })
     .catch((e) => {
         console.error(`ERROR: ${e.code} - ${e.message}\n`);
@@ -138,20 +136,20 @@ function getBucketObjects(bucketName, res) {
 
 /**
  * Creates an object in the IBM Cloud Storage Bucket
- * @param {*} itemName 
- * @param {*} fileText 
- * @param {*} res 
+ * @param {*} itemName
+ * @param {*} fileText
+ * @param {*} res
  */
 function createObjectInBucket(itemName, fileText, res) {
-    console.log(`Creando objeto: ${itemName}`); 
+    console.log(`Creando objeto: ${itemName}`);
     jsonString = JSON.stringify(fileText)
-    console.log(`Values: ${jsonString}`); 
+    console.log(`Values: ${jsonString}`);
     var card = JSON.parse(jsonString).card;
     var temp = JSON.parse(jsonString).temp;
-    jsonString = checkCardiacValue(card,temp);    
+    jsonString = checkCardiacValue(card,temp);
     return cos.putObject({
-        Bucket: 'feptarco', 
-        Key: itemName, 
+        Bucket: 'feptarco',
+        Key: itemName,
         Body: jsonString
     }).promise()
     .then(() => {
@@ -163,14 +161,14 @@ function createObjectInBucket(itemName, fileText, res) {
         logger.error(logger.exceptions.getAllInfo(e));
         res.status(500).json({message : 'Error: '+e.message, status: 500});
     });
-        
+
 }
 
 /**
- * Replaces the extra value in the cardiac measure and 
+ * Replaces the extra value in the cardiac measure and
  * creates a new jsonString
- * @param {*} card 
- * @param {*} temp 
+ * @param {*} card
+ * @param {*} temp
  */
 function checkCardiacValue(card, temp){
     var jsonData = {};
@@ -194,25 +192,25 @@ function checkCardiacValue(card, temp){
     }
     jsonData.measures.push(measure);
     console.log("data: ", jsonData);
-    
-    
+
+
     return JSON.stringify(jsonData);
-    
+
 }
 /**
  * Checks if the type is defined
- * @param  body 
+ * @param  body
  */
 function checkType(body) {
    if (body === undefined)
         return false
     else
-        return true    
+        return true
 }
 
 /**
  * Returns a formatted date
- * @param {*} date 
+ * @param {*} date
  */
 function getDate(date){
     var hours = date.getHours();
@@ -228,4 +226,3 @@ function getDate(date){
 }
 
 module.exports = router;
-  
