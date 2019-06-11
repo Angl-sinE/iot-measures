@@ -12,7 +12,7 @@ let morgan = require('morgan');
 var app = express();
 
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+var dashboardRouter = require('./routes/dashboard');
 var cosRouter = require('./routes/cos');
 
 // view engine setup
@@ -29,7 +29,7 @@ app.use(morgan('combined'));
 app.use(morgan("common", { stream: winstonLog.stream }))
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/dashboard', dashboardRouter);
 app.use('/cos', cosRouter);
 
 
