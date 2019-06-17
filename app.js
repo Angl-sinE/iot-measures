@@ -14,6 +14,7 @@ var app = express();
 var indexRouter = require('./routes/index');
 var dashboardRouter = require('./routes/dashboard');
 var cosRouter = require('./routes/cos');
+var connectRouter = require('./routes/connect');
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -31,6 +32,7 @@ app.use(morgan("common", { stream: winstonLog.stream }))
 app.use('/', indexRouter);
 app.use('/dashboard', dashboardRouter);
 app.use('/cos', cosRouter);
+app.use('/connect',connectRouter);
 
 
 // catch 404 and forward to error handler

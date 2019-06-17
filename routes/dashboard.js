@@ -24,31 +24,5 @@ router.get('/initSession',function(req, res, next){
 });
 
 
-async function createAndInitApiFramework() {
-  console.log("in create and init api framework");
-
-  // Create an instance of the CognosApi
-  this.api = new CognosApi({
-        cognosRootURL: environment.cognos_root_url,
-        sessionCode: this.session.code,
-        initTimeout: 10000,
-        node: document.getElementById('ddeDashboard')
-        });
-
-  this.api._node.hidden = false;
-
-  try {
-    await this.api.initialize();
-    console.log('API created successfully.');
-  } catch (e) {
-    console.log('Unable to initialize API instance: ' + e.message);
-    throw e;
-  }
-
-  console.log(this.api.dashboard);
-  return this.api.apiId;
-}
-
-
 
 module.exports = router;
