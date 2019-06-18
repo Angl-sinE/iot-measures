@@ -1,9 +1,9 @@
-var ibmdb = require('ibm_db');
+//var ibmdb = require('ibm_db');
 var express = require('express');
 var config = require ('../config/db2');
 var router = express.Router();
 
-ibmdb.open("DRIVER={DB2};DATABASE="+config.dataBase+";UID="+config.username+";PWD="+config.password+";HOSTNAME="+config.hostname+"port="+config.portNumber,function(err,conn){
+ibmdb.open("DATABASE=BLUDB;HOSTNAME=dashdb-entry-yp-dal09-08.services.dal.bluemix.net;PORT=50000;PROTOCOL=TCPIP;UID=dash100433;PWD=(QGRmbVi8ljE;",function(err,conn){
     if(err) {
 	  	console.error("error: ", err.message);
 	}
@@ -16,6 +16,5 @@ ibmdb.open("DRIVER={DB2};DATABASE="+config.dataBase+";UID="+config.username+";PW
 });
 
 router.get('/getData',function(req, res, next){
-
 });
 module.exports = router;
