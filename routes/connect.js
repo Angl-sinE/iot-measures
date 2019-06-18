@@ -16,6 +16,6 @@ ibmdb.open("DRIVER={DB2};DATABASE="+config.dataBase+";UID="+config.username+";PW
 });
 
 router.get('/getData',function(req, res, next){
-	console.log (config.hostname );
+
 });
 module.exports = router;
