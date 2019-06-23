@@ -1,9 +1,12 @@
 var express = require('express');
 const AWS = require('ibm-cos-sdk');
+var ibmdb = require('ibm_db');
 var appRoot = require('app-root-path');
 var router = express.Router();
 var axios = require('axios');
+var config = require ('../config/db2');
 const { createLogger, format, transports } = require('winston');
+
 
 const logger = createLogger({
     level: 'debug',
@@ -31,6 +34,7 @@ router.post('/',function(req, res, next){
      var itemName = 'T'+'-'+getDate(new Date());
      console.log('item: ', itemName);
      createObjectInBucket(itemName,req.body, res);
+     //insertMeasures(res,req.body);
    }
    else
     res.status(303).json({message : 'Error: Archivo Invalido', status: 303});
@@ -52,6 +56,34 @@ router.get('/getBucketContents', function(req,res,next) {
       getBucketObjectList('feptarco', res);
 
 });
+
+function insertMeasures(res, content){
+    var jsonContent = JSON.stringify(content)
+    var card = JSON.parse(jsonContent).card;
+    var temp = JSON.parse(jsonContent).temp;
+    card = checkCardiacValue(card);
+    console.log(`Values: ${card}`);
+     
+    ibmdb.open("DATABASE="+config.dataBase+";HOSTNAME="+config.hostname+";PORT="+config.portNumber+";PROTOCOL=TCPIP;UID="+config.username+";PWD="+config.password+";",function(err,conn){
+		if(err) {
+			  console.error("error: ", err.message);
+		}
+		 else {
+            conn.prepare("INSERT INTO DASH100433.MEASURES_BIOMETRIC (created_at, temperature, cardiac) VALUES (current_timestamp,?,?)" , function (err, stmt) {     
+				if (err){
+                    return conn.closeSync();
+				} 
+                    stmt.execute([temp, card], function (err, result) {
+                        if( err ) console.log(err);  
+                        else result.closeSync();  
+                        //Close the connection
+                        conn.close(function(err){});
+                      });    		
+			});
+		}
+    });
+    
+}
 
 /**
  * Returns the objects content of the bucket
@@ -141,12 +173,11 @@ function getBucketObjects(bucketName, res) {
  * @param {*} res
  */
 function createObjectInBucket(itemName, fileText, res) {
-    console.log(`Creando objeto: ${itemName}`);
     jsonString = JSON.stringify(fileText)
     console.log(`Values: ${jsonString}`);
     var card = JSON.parse(jsonString).card;
     var temp = JSON.parse(jsonString).temp;
-    jsonString = checkCardiacValue(card,temp);
+    jsonString = checkCardiacValueOld(card,temp);
     return cos.putObject({
         Bucket: 'feptarco',
         Key: itemName,
@@ -170,7 +201,17 @@ function createObjectInBucket(itemName, fileText, res) {
  * @param {*} card
  * @param {*} temp
  */
-function checkCardiacValue(card, temp){
+function checkCardiacValue(card){
+    var cardInt = parseInt(card);
+    if (cardInt >= 900){
+        var newCardValue = card.replace("9", "");
+        card = newCardValue;
+    }
+    return card;
+
+}
+
+function checkCardiacValueOld(card, temp){
     var jsonData = {};
     var measures = []
     jsonData.measures = measures;
@@ -191,11 +232,8 @@ function checkCardiacValue(card, temp){
         };
     }
     jsonData.measures.push(measure);
-    console.log("data: ", jsonData);
-
-
+    console.log(jsonData);
     return JSON.stringify(jsonData);
-
 }
 /**
  * Checks if the type is defined
