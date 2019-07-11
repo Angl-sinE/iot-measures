@@ -4,7 +4,7 @@ var ibmdb = require('ibm_db');
 var appRoot = require('app-root-path');
 var router = express.Router();
 var axios = require('axios');
-var config = require ('../config/db2');
+var config = require ('../config/ibm');
 const { createLogger, format, transports } = require('winston');
 
 

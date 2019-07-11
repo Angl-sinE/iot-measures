@@ -1,11 +1,17 @@
-#Node JS API - Temperature Meter
-##Start Api
-npm install
-npm start
+# Feptarco Iot-API 
+## Use App
+* npm install
+* npm start
 
-##Requests
- POST - /cos
- GET - dashboard/initSession
+## Production 
+* cd bin/
+* forever start www
+
+## Requests
+* GET - /test
+* GET - measures/biomecanic
+* GET - measures/biometric
+
 
 
 
