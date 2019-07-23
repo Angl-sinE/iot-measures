@@ -4,16 +4,17 @@ var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var bodyParser = require('body-parser');
-let winstonLog = require('./config/winston');
-let morgan = require('morgan');
-
+var winstonLog = require('./config/winston');
+var morgan = require('morgan');
+var cors = require('cors');
 
 
 var app = express();
-
 var indexRouter = require('./routes/index');
+/*
 var dashboardRouter = require('./routes/dashboard');
 var cosRouter = require('./routes/cos');
+*/
 var measuresRouter = require('./routes/measures');
 
 // view engine setup
@@ -25,21 +26,25 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(cors())
 //logging
 app.use(morgan('combined'));
 app.use(morgan("common", { stream: winstonLog.stream }))
 
+
+// Routes
 app.use('/', indexRouter);
-app.use('/dashboard', dashboardRouter);
-app.use('/cos', cosRouter);
 app.use('/measures',measuresRouter);
 
+/*
+app.use('/dashboard', dashboardRouter);
+app.use('/cos', cosRouter);
+*/
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
 });
-
 // error handler
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
