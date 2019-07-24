@@ -12,6 +12,10 @@ router.get('/biometric', (request, response, next) => {
 	getBiometric(response);
 });
 
+router.get('/biometrica', (request, response, next) => {
+	getBiometrica(response);
+});
+
 function getBiomecanic (response) {
 	ibmdb.open("DATABASE="+config.dataBase+";HOSTNAME="+config.hostname+";PORT="+config.portNumber+";PROTOCOL=TCPIP;UID="+config.username+";PWD="+config.password+";",(err,conn) =>
 	{
@@ -47,6 +51,32 @@ function getBiometric(response) {
 		 else {
 			conn.query("SELECT temperature, cardiac, created_at, DATE_PART('DAY',created_at)  as dia_med, DAY(current timestamp)  as dia_actual FROM "+dataBase+"."+
 			"MEASURES_BIOMETRIC WHERE DATE_PART('YEAR',created_at) = YEAR(current timestamp) AND DATE_PART('MONTH',created_at) = MONTH(current timestamp) AND DATE_PART('DAY',created_at) = DAY(current timestamp)", (err, data) => {
+				if (err){
+					console.log(err);
+					response.status(400).json({'error': err});
+				} 
+				else{
+					response.status(200).json({
+						'data': data
+					});
+				} 
+				conn.close(function () {
+					console.log('done');
+			    });		
+			});
+		}
+	});
+}
+
+function getBiometrica(response) {
+	ibmdb.open("DATABASE="+config.dataBase+";HOSTNAME="+config.hostname+";PORT="+config.portNumber+";PROTOCOL=TCPIP;UID="+config.username+";PWD="+config.password+";",(err,conn) =>
+	{
+		if(err) {
+			  console.error("error: ", err.message);
+		}
+		 else {
+			conn.query("SELECT ritmo as cardiac, temperatura as temperature, timestamp(tiempo) as created_at, DATE_PART('DAY', timestamp(tiempo)) as dia_medida FROM "+dataBase+"."+
+			"BIOMETRICA WHERE DATE_PART('MONTH',timestamp(tiempo)) = MONTH(current timestamp) FETCH FIRST 150 ROWS ONLY", (err, data) => {
 				if (err){
 					console.log(err);
 					response.status(400).json({'error': err});
